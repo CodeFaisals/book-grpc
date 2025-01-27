@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/BlazeCode1/book-grpc/app/controller/kafka_consumer"
-	"github.com/BlazeCode1/book-grpc/app/grpc-book"
+	"github.com/BlazeCode1/book-grpc/app/controller/controllers/grpc"
+	"github.com/BlazeCode1/book-grpc/app/controller/kafka"
 	"github.com/BlazeCode1/book-grpc/app/repository"
 	"log"
 	"os"
