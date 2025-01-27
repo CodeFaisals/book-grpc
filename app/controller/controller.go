@@ -1,12 +1,16 @@
-package grpc
+package controller
 
 import (
-	"faisal.com/bookProject/controller/grpc/handlers"
-	pb "faisal.com/bookProject/server/proto"
+	pb "github.com/BlazeCode1/book-grpc/app/controller/grpc"
+	//"github.com/BlazeCode1/book-grpc/app/service/book" //service/handler
 	"google.golang.org/grpc"
 	"log"
 	"net"
 )
+
+type server struct {
+	pb.UnimplementedBookServiceServer
+}
 
 // StartGRPCServer initializes and starts the gRPC server
 func StartGRPCServer(address string) {
@@ -16,7 +20,7 @@ func StartGRPCServer(address string) {
 	}
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterBookServiceServer(grpcServer, &handlers.BookService{})
+	pb.RegisterBookServiceServer(grpcServer, &server{})
 
 	log.Printf("gRPC server started on %s", address)
 	if err := grpcServer.Serve(listener); err != nil {
