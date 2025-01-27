@@ -5,6 +5,7 @@ go 1.23.4
 require (
 	github.com/couchbase/gocb/v2 v2.9.3
 	github.com/google/uuid v1.6.0
+	github.com/segmentio/kafka-go v0.4.47
 	google.golang.org/grpc v1.70.0
 	google.golang.org/protobuf v1.35.2
 )
@@ -18,6 +19,8 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
+	github.com/klauspost/compress v1.15.9 // indirect
+	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 // indirect
 	go.opentelemetry.io/otel v1.32.0 // indirect
 	go.opentelemetry.io/otel/metric v1.32.0 // indirect

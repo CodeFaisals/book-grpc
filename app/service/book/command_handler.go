@@ -2,10 +2,11 @@ package book
 
 import (
 	"fmt"
+	"log"
+
 	pb "github.com/BlazeCode1/book-grpc/app/controller/grpc"
 	"github.com/BlazeCode1/book-grpc/app/repository"
 	"github.com/google/uuid"
-	"log"
 )
 
 func HandleGetBooks() (*pb.BookListResponse, error) {
@@ -73,15 +74,12 @@ func HandleAddBook(book repository.Book) (*pb.BookResponse, error) {
 	}, nil
 }
 
-//func HandleDeleteBook(id string) (*pb.BookResponse, error) {
-//	log.Printf("Deleting book with ID: %s", id)
-//
-//	err := repository.DeleteBook(id)
-//	if err != nil {
-//		return nil, fmt.Errorf("failed to delete book: %v", err)
-//	}
-//
-//	return &pb.BookResponse{
-//		Message: fmt.Sprintf("Book with ID '%s' deleted successfully", id),
-//	}, nil
-//}
+func HandleDeleteBook(id string) (*pb.BookResponse, error) {
+	log.Printf("Deleting book with ID: %s", id)
+	// Delete the book from your storage
+	err := repository.DeleteBook(id)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.BookResponse{Message: "Book deleted successfully"}, nil
+}

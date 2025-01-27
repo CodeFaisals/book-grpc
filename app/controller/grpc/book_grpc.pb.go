@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.3
-// source: book.proto
+// source: app/controller/grpc/book.proto
 
-package __
+package grpc
 
 import (
 	context "context"
@@ -19,9 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	BookService_AddBook_FullMethodName    = "/proto.BookService/AddBook"
-	BookService_GetBooks_FullMethodName   = "/proto.BookService/GetBooks"
-	BookService_DeleteBook_FullMethodName = "/proto.BookService/DeleteBook"
+	BookService_AddBook_FullMethodName    = "/book.BookService/AddBook"
+	BookService_GetBooks_FullMethodName   = "/book.BookService/GetBooks"
+	BookService_DeleteBook_FullMethodName = "/book.BookService/DeleteBook"
 )
 
 // BookServiceClient is the client API for BookService service.
@@ -178,7 +178,7 @@ func _BookService_DeleteBook_Handler(srv interface{}, ctx context.Context, dec f
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var BookService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.BookService",
+	ServiceName: "book.BookService",
 	HandlerType: (*BookServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -195,5 +195,5 @@ var BookService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "book.proto",
+	Metadata: "app/controller/grpc/book.proto",
 }

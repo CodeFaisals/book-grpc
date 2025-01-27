@@ -35,3 +35,11 @@ func UpdateBook(id, newBookName string) error {
 
 	return nil
 }
+
+func DeleteBook(id string) error {
+	query := "DELETE FROM `books_bucket` WHERE id = $1"
+	_, err := Cluster.Query(query, &gocb.QueryOptions{
+		PositionalParameters: []interface{}{id},
+	})
+	return err
+}

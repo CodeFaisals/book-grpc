@@ -1,44 +1,40 @@
-//package controller
-//
-//import (
-//	"faisal.com/bookProject/repository"
-//	"github.com/Trendyol/kafka-cronsumer/pkg/kafka"
-//	"github.com/Trendyol/kafka-konsumer/v2"
-//	"log"
-//)
-//
-//func StartConsumer() {
-//	cfg := &kafka.ConsumerConfig{
-//		Reader: kafka.ReaderConfig{
-//			Brokers: []string{"localhost:9092"},
-//			Topic:   "book-events",
-//			GroupID: "book-group",
-//		},
-//		ConsumeFn: consumeFn,
-//	}
-//
-//	consumer, err := kafka.NewConsumer(cfg)
-//	if err != nil {
-//		log.Fatalf("Failed to start Kafka consumer: %v", err)
-//	}
-//
-//	defer consumer.Stop()
-//	consumer.Consume()
-//	log.Println("Kafka consumer started.")
-//}
-//
-//func consumeFn(message *kafka.Message) error {
-//	log.Printf("Received message: %s", message.Value)
-//
-//	bookID := string(message.Key)
-//	updatedBookName := string(message.Value)
-//
-//	err := repository.UpdateBook(bookID, updatedBookName)
-//	if err != nil {
-//		log.Printf("Failed to update book: %v", err)
-//		return err
-//	}
-//
-//	log.Printf("Book with ID '%s' updated successfully", bookID)
-//	return nil
-//}
+package kafka
+
+import (
+	"context"
+	"log"
+
+	"github.com/BlazeCode1/book-grpc/app/repository"
+	"github.com/segmentio/kafka-go"
+)
+
+func StartConsumer() {
+	reader := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: []string{"localhost:9092"},
+		Topic:   "book-events",
+		GroupID: "book-group",
+	})
+	defer reader.Close()
+
+	log.Println("Kafka consumer started")
+
+	for {
+		msg, err := reader.ReadMessage(context.Background())
+		if err != nil {
+			log.Printf("Error reading message: %v", err)
+			continue
+		}
+
+		id := string(msg.Key)
+		bookName := string(msg.Value)
+
+		// Update the book in the database
+		err = repository.UpdateBook(id, bookName)
+		if err != nil {
+			log.Printf("Error updating book: %v", err)
+			continue
+		}
+
+		log.Printf("Successfully updated book %s with name %s", id, bookName)
+	}
+}
