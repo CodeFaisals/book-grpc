@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 	"time"
-
+	"github.com/BlazeCode1/book-grpc/couchbase/connection"
 	"github.com/couchbase/gocb/v2"
 )
 
@@ -13,7 +13,7 @@ type Book struct {
 }
 
 func InsertBook(book Book) error {
-	collection := GetCollection()
+	collection := connection.GetCollection()
 	_, err := collection.Upsert(book.ID, book, &gocb.UpsertOptions{
 		Timeout: 5 * time.Second,
 	})
@@ -24,7 +24,7 @@ func InsertBook(book Book) error {
 }
 
 func UpdateBook(id, newBookName string) error {
-	_, err := Cluster.Bucket("books_bucket").DefaultCollection().Upsert(id, map[string]interface{}{
+	_, err := connection.Cluster.Bucket("books_bucket").DefaultCollection().Upsert(id, map[string]interface{}{
 		"id":        id,
 		"book_name": newBookName,
 	}, nil)

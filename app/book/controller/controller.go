@@ -5,7 +5,6 @@ import (
 	grpc2 "github.com/BlazeCode1/book-grpc/app/book/controller/grpc"
 	"github.com/BlazeCode1/book-grpc/app/book/repository"
 	"github.com/BlazeCode1/book-grpc/app/book/service"
-	//"github.com/BlazeCode1/book-grpc/app/service/book" //service/handler
 	"log"
 	"net"
 
