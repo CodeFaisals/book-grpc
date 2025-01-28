@@ -1,4 +1,4 @@
-package repository
+package couchbase
 
 import (
 	"log"

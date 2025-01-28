@@ -3,17 +3,16 @@ package repository
 import (
 	"fmt"
 	"time"
-	"github.com/BlazeCode1/book-grpc/couchbase/connection"
+
+	"github.com/BlazeCode1/book-grpc/couchbase"
 	"github.com/couchbase/gocb/v2"
+	"github.com/BlazeCode1/book-grpc/app/book/model/bookModel"
 )
 
-type Book struct {
-	ID       string `json:"id"`
-	BookName string `json:"book_name"`
-}
 
-func InsertBook(book Book) error {
-	collection := connection.GetCollection()
+
+func InsertBook(book bookModel) error {
+	collection := couchbase.GetCollection()
 	_, err := collection.Upsert(book.ID, book, &gocb.UpsertOptions{
 		Timeout: 5 * time.Second,
 	})
@@ -24,7 +23,7 @@ func InsertBook(book Book) error {
 }
 
 func UpdateBook(id, newBookName string) error {
-	_, err := connection.Cluster.Bucket("books_bucket").DefaultCollection().Upsert(id, map[string]interface{}{
+	_, err := couchbase.Cluster.Bucket("books_bucket").DefaultCollection().Upsert(id, map[string]interface{}{
 		"id":        id,
 		"book_name": newBookName,
 	}, nil)
@@ -38,7 +37,7 @@ func UpdateBook(id, newBookName string) error {
 
 func DeleteBook(id string) error {
 	query := "DELETE FROM `books_bucket` WHERE id = $1"
-	_, err := Cluster.Query(query, &gocb.QueryOptions{
+	_, err := couchbase.Cluster.Query(query, &gocb.QueryOptions{
 		PositionalParameters: []interface{}{id},
 	})
 	return err
