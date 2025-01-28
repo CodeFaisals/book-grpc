@@ -1,9 +1,11 @@
 package consumer
 
+//kafka code
 import (
 	"context"
-	"github.com/BlazeCode1/book-grpc/app/book/repository"
 	"log"
+
+	"github.com/BlazeCode1/book-grpc/app/book/repository"
 
 	"github.com/segmentio/kafka-go"
 )
