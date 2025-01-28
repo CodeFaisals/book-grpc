@@ -4,14 +4,34 @@ import (
 	"fmt"
 	"time"
 
+	b "github.com/BlazeCode1/book-grpc/app/book/model/Book"
 	"github.com/BlazeCode1/book-grpc/couchbase"
 	"github.com/couchbase/gocb/v2"
-	"github.com/BlazeCode1/book-grpc/app/book/model/bookModel"
 )
 
+func GetBooks() ([]b.Book, error) {
+	query := "SELECT id, book_name FROM `books_bucket`"
+	rows, err := couchbase.Cluster.Query(query, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not get books: %v", err)
+	}
 
+	var books []b.Book
+	for rows.Next() {
+		var book b.Book
+		if err := rows.Row(&book); err != nil {
+			return nil, fmt.Errorf("could not get book: %v", err)
+		}
+		books = append(books, book)
+	}
 
-func InsertBook(book bookModel) error {
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating rows: %v", err)
+	}
+
+	return books, nil
+}
+func InsertBook(book b.Book) error {
 	collection := couchbase.GetCollection()
 	_, err := collection.Upsert(book.ID, book, &gocb.UpsertOptions{
 		Timeout: 5 * time.Second,

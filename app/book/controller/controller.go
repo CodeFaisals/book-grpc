@@ -2,11 +2,12 @@ package controller
 
 import (
 	"context"
-	grpc2 "github.com/BlazeCode1/book-grpc/app/book/controller/grpc"
-	"github.com/BlazeCode1/book-grpc/app/book/repository"
-	"github.com/BlazeCode1/book-grpc/app/book/service"
 	"log"
 	"net"
+
+	grpc2 "github.com/BlazeCode1/book-grpc/app/book/controller/grpc"
+	b "github.com/BlazeCode1/book-grpc/app/book/model/Book"
+	"github.com/BlazeCode1/book-grpc/app/book/service"
 
 	"google.golang.org/grpc"
 )
@@ -16,7 +17,7 @@ type server struct {
 }
 
 func (s *server) AddBook(ctx context.Context, req *grpc2.BookRequest) (*grpc2.BookResponse, error) {
-	bookInstance := repository.Book{
+	bookInstance := b.Book{
 		BookName: req.BookName,
 	}
 	return service.HandleAddBook(bookInstance)

@@ -1,18 +1,19 @@
 package main
 
 import (
-	"github.com/BlazeCode1/book-grpc/app/book/consumer"
-	"github.com/BlazeCode1/book-grpc/app/book/controller"
-	"github.com/BlazeCode1/book-grpc/app/book/repository"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/BlazeCode1/book-grpc/app/book/consumer"
+	"github.com/BlazeCode1/book-grpc/app/book/controller"
+	"github.com/BlazeCode1/book-grpc/couchbase"
 )
 
 func main() {
 	// Initialize Couchbase connection
-	repository.InitCouchbase("admin", "1q2w3e4r5t", "books_bucket")
+	couchbase.InitCouchbase("admin", "1q2w3e4r5t", "books_bucket")
 
 	// Start Kafka consumer in a separate goroutine
 	go consumer.StartConsumer()
