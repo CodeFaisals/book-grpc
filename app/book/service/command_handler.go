@@ -1,24 +1,25 @@
-package book
+package service
 
 import (
 	"fmt"
+	pb "github.com/BlazeCode1/book-grpc/app/book/controller/grpc"
+	repository2 "github.com/BlazeCode1/book-grpc/app/book/repository"
 	"log"
 
-	pb "github.com/BlazeCode1/book-grpc/app/controller/grpc"
-	"github.com/BlazeCode1/book-grpc/app/repository"
 	"github.com/google/uuid"
 )
 
 func HandleGetBooks() (*pb.BookListResponse, error) {
+	// remove this query
 	query := "SELECT id, book_name FROM `books_bucket`"
-	rows, err := repository.Cluster.Query(query, nil)
+	rows, err := repository2.Cluster.Query(query, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	var books []*pb.Book
 	for rows.Next() {
-		var row repository.Book
+		var row repository2.Book
 		if err := rows.Row(&row); err != nil {
 			return nil, err
 		}
@@ -31,7 +32,7 @@ func HandleGetBooks() (*pb.BookListResponse, error) {
 	return &pb.BookListResponse{Books: books}, nil
 }
 
-//func (s *server) GetBooks(ctx context.Context, req *pb.EmptyRequest) (*pb.BookListResponse, error) {
+//func (s *client) GetBooks(ctx context.Context, req *pb.EmptyRequest) (*pb.BookListResponse, error) {
 //	query := "SELECT id, book_name FROM `books_bucket`"
 //	rows, err := couchbase.Cluster.Query(query, nil)
 //	if err != nil {
@@ -55,16 +56,16 @@ func HandleGetBooks() (*pb.BookListResponse, error) {
 //	}, nil
 //}
 
-func HandleAddBook(book repository.Book) (*pb.BookResponse, error) {
+func HandleAddBook(book repository2.Book) (*pb.BookResponse, error) {
 	log.Printf("Adding book: %s", book.BookName)
 
 	// Create a new Book instance
-	bookInstance := repository.Book{
+	bookInstance := repository2.Book{
 		ID:       uuid.New().String(), // Generate a new UUID for each book
 		BookName: book.BookName,
 	}
 
-	err := repository.InsertBook(bookInstance)
+	err := repository2.InsertBook(bookInstance)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add book: %v", err)
 	}
@@ -77,7 +78,7 @@ func HandleAddBook(book repository.Book) (*pb.BookResponse, error) {
 func HandleDeleteBook(id string) (*pb.BookResponse, error) {
 	log.Printf("Deleting book with ID: %s", id)
 	// Delete the book from your storage
-	err := repository.DeleteBook(id)
+	err := repository2.DeleteBook(id)
 	if err != nil {
 		return nil, err
 	}

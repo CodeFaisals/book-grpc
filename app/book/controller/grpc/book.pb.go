@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.2
 // 	protoc        v5.29.3
-// source: app/controller/grpc/book.proto
+// source: app/controller/grpc/book.book
 
 package grpc
 

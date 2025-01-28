@@ -1,10 +1,10 @@
-package kafka
+package consumer
 
 import (
 	"context"
+	"github.com/BlazeCode1/book-grpc/app/book/repository"
 	"log"
 
-	"github.com/BlazeCode1/book-grpc/app/repository"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -27,7 +27,7 @@ func StartConsumer() {
 
 		id := string(msg.Key)
 		bookName := string(msg.Value)
-
+		// todo: put it in service not from database directly
 		// Update the book in the database
 		err = repository.UpdateBook(id, bookName)
 		if err != nil {
