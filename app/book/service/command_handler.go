@@ -56,3 +56,12 @@ func HandleDeleteBook(id string) (*pb.BookResponse, error) {
 	}
 	return &pb.BookResponse{Message: "Book deleted successfully"}, nil
 }
+
+func HandleUpdateBook(id string, book b.Book) (*pb.BookResponse, error) {
+	log.Printf("Updating book with ID: %s", id)
+	err := operation.UpdateBook(id, book.BookName)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.BookResponse{Message: "Book updated successfully"}, nil
+}

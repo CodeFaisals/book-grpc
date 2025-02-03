@@ -3,10 +3,11 @@ package consumer
 //kafka code
 import (
 	"context"
+	"encoding/json"
 	"log"
 
-	"github.com/BlazeCode1/book-grpc/app/book/repository"
-
+	"github.com/BlazeCode1/book-grpc/app/book/model/Book"
+	"github.com/BlazeCode1/book-grpc/app/book/service"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -28,15 +29,22 @@ func StartConsumer() {
 		}
 
 		id := string(msg.Key)
-		bookName := string(msg.Value)
-		// todo: put it in service not from database directly
+		book := Book.Book{}
+		err = json.Unmarshal(msg.Value, &book)
+		if err != nil {
+			log.Printf("Error unmarshalling book: %v", err)
+			continue
+		}
+
+		book.ID = id
+
 		// Update the book in the database
-		err = repository.UpdateBook(id, bookName)
+		response, err := service.HandleUpdateBook(id, book)
 		if err != nil {
 			log.Printf("Error updating book: %v", err)
 			continue
 		}
 
-		log.Printf("Successfully updated book %s with name %s", id, bookName)
+		log.Printf("Response: %v", response)
 	}
 }
