@@ -13,7 +13,7 @@ import (
 
 func StartConsumer() {
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: []string{"localhost:9092"},
+		Brokers: []string{"broker:29092"},
 		Topic:   "book-events",
 		GroupID: "book-group",
 	})
@@ -21,20 +21,36 @@ func StartConsumer() {
 
 	log.Println("Kafka consumer started")
 
+	// Test connection to broker
+	conn, err := kafka.DialLeader(context.Background(), "tcp", "broker:29092", "book-events", 0)
+	if err != nil {
+		log.Printf("Failed to connect to Kafka broker: %v", err)
+		return
+	}
+	conn.Close()
+	log.Println("Successfully connected to Kafka broker")
+
 	for {
-		msg, err := reader.ReadMessage(context.Background())
+		ctx := context.Background()
+		msg, err := reader.ReadMessage(ctx)
 		if err != nil {
 			log.Printf("Error reading message: %v", err)
 			continue
 		}
+
+		log.Printf("Received message: Topic=%s, Partition=%d, Offset=%d, Key=%s, Value=%s",
+			msg.Topic, msg.Partition, msg.Offset, string(msg.Key), string(msg.Value))
 
 		id := string(msg.Key)
 		book := Book.Book{}
 		err = json.Unmarshal(msg.Value, &book)
 		if err != nil {
 			log.Printf("Error unmarshalling book: %v", err)
+			log.Printf("Raw message value: %s", string(msg.Value))
 			continue
 		}
+
+		log.Printf("Processing book update - ID: %s, BookName: %s", id, book.BookName)
 
 		book.ID = id
 
