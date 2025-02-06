@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// Initialize Couchbase connection
-	couchbase.InitCouchbase("admin", "1q2w3e4r5t", "books_bucket")
+	couchbase.InitCouchbase("Administrator", "123123", "books_bucket")
 
 	// Start Kafka consumer in a separate goroutine
 	go consumer.StartConsumer()
