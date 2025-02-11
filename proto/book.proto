@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "github.com/BlazeCode1/book-grpc/app/controller/grpc";
+option go_package = "app/controller/grpc2";
 package book;
 
 service BookService {
