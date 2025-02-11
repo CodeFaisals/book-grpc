@@ -10,7 +10,7 @@ import (
 )
 
 func GetBooks() ([]b.Book, error) {
-	query := "SELECT id, book_name FROM `books_bucket`"
+	query := "SELECT id, book_name,author FROM `books_bucket`"
 	rows, err := couchbase.Cluster.Query(query, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not get books: %v", err)

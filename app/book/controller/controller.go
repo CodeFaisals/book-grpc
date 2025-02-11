@@ -19,6 +19,7 @@ type server struct {
 func (s *server) AddBook(ctx context.Context, req *grpc2.BookRequest) (*grpc2.BookResponse, error) {
 	bookInstance := b.Book{
 		BookName: req.BookName,
+		Author:   req.Author,
 	}
 	return service.HandleAddBook(bookInstance)
 }
