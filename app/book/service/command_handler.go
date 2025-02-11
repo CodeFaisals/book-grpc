@@ -22,6 +22,7 @@ func HandleGetBooks() (*pb.BookListResponse, error) {
 		pbBooks = append(pbBooks, &pb.Book{
 			Id:       book.ID,
 			BookName: book.BookName,
+			Author:   book.Author,
 		})
 	}
 	return &pb.BookListResponse{Books: pbBooks}, nil
@@ -35,6 +36,7 @@ func HandleAddBook(book b.Book) (*pb.BookResponse, error) {
 	bookInstance := b.Book{
 		ID:       uuid.New().String(), // Generate a new UUID for each book
 		BookName: book.BookName,
+		Author:   book.Author,
 	}
 
 	err := operation.InsertBook(bookInstance)
