@@ -10,9 +10,20 @@ import (
 	"github.com/google/uuid"
 )
 
-func HandleGetBooks() (*pb.BookListResponse, error) {
+type BookService interface {
+	HandleGetBooks() (*pb.BookListResponse, error)
+	HandleAddBook(book b.Book) (*pb.BookResponse, error)
+	HandleDeleteBook(id string) (*pb.BookResponse, error)
+	HandleUpdateBook(id string, book b.Book) (*pb.BookResponse, error)
+}
+
+type bookService struct {
+	repo operation.BookRepository
+}
+
+func (s *bookService) HandleGetBooks() (*pb.BookListResponse, error) {
 	// remove this query and add it to repository/operations.go # DONE
-	books, err := operation.GetBooks()
+	books, err := s.repo.GetBooks()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get books: %v", err)
 	}
@@ -29,7 +40,7 @@ func HandleGetBooks() (*pb.BookListResponse, error) {
 }
 
 // here we require packacge model book # DONE
-func HandleAddBook(book b.Book) (*pb.BookResponse, error) {
+func (s *bookService) HandleAddBook(book b.Book) (*pb.BookResponse, error) {
 	log.Printf("Adding book: %s", book.BookName)
 
 	// Create a new Book instance
@@ -39,7 +50,7 @@ func HandleAddBook(book b.Book) (*pb.BookResponse, error) {
 		Author:   book.Author,
 	}
 
-	err := operation.InsertBook(bookInstance)
+	err := s.repo.InsertBook(bookInstance)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add book: %v", err)
 	}
@@ -49,19 +60,19 @@ func HandleAddBook(book b.Book) (*pb.BookResponse, error) {
 	}, nil
 }
 
-func HandleDeleteBook(id string) (*pb.BookResponse, error) {
+func (s *bookService) HandleDeleteBook(id string) (*pb.BookResponse, error) {
 	log.Printf("Deleting book with ID: %s", id)
 	// Delete the book from your storage
-	err := operation.DeleteBook(id)
+	err := s.repo.DeleteBook(id)
 	if err != nil {
 		return nil, err
 	}
 	return &pb.BookResponse{Message: "Book deleted successfully"}, nil
 }
 
-func HandleUpdateBook(id string, book b.Book) (*pb.BookResponse, error) {
+func (s *bookService) HandleUpdateBook(id string, book b.Book) (*pb.BookResponse, error) {
 	log.Printf("Updating book with ID: %s", id)
-	err := operation.UpdateBook(id, book.BookName)
+	err := s.repo.UpdateBook(id, book.BookName)
 	if err != nil {
 		return nil, err
 	}

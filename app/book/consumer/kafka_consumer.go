@@ -11,7 +11,14 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func StartConsumer() {
+type KafkaConsumer interface {
+	StartConsumer() error
+}
+type kafkaConsumer struct {
+	service service.BookService
+}
+
+func (s *kafkaConsumer) StartConsumer() {
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{"broker:29092"},
 		Topic:   "book-events",
@@ -55,7 +62,7 @@ func StartConsumer() {
 		book.ID = id
 
 		// Update the book in the database
-		response, err := service.HandleUpdateBook(id, book)
+		response, err := s.service.HandleUpdateBook(id, book)
 		if err != nil {
 			log.Printf("Error updating book: %v", err)
 			continue

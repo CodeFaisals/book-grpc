@@ -14,6 +14,7 @@ import (
 
 type server struct {
 	grpc2.UnimplementedBookServiceServer
+	service service.BookService
 }
 
 func (s *server) AddBook(ctx context.Context, req *grpc2.BookRequest) (*grpc2.BookResponse, error) {
@@ -21,15 +22,15 @@ func (s *server) AddBook(ctx context.Context, req *grpc2.BookRequest) (*grpc2.Bo
 		BookName: req.BookName,
 		Author:   req.Author,
 	}
-	return service.HandleAddBook(bookInstance)
+	return s.service.HandleAddBook(bookInstance)
 }
 
 func (s *server) GetBooks(ctx context.Context, req *grpc2.EmptyRequest) (*grpc2.BookListResponse, error) {
-	return service.HandleGetBooks()
+	return s.service.HandleGetBooks()
 }
 
 func (s *server) DeleteBook(ctx context.Context, req *grpc2.BookDeletionRequest) (*grpc2.BookResponse, error) {
-	return service.HandleDeleteBook(req.Id)
+	return s.service.HandleDeleteBook(req.Id)
 }
 
 // StartGRPCServer initializes and starts the gRPC client

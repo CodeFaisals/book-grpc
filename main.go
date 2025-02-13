@@ -12,12 +12,22 @@ import (
 )
 
 func main() {
+	var Client couchbase.Client
+	var Consumer consumer.KafkaConsumer
 	// Initialize Couchbase connection
-	couchbase.InitCouchbase("Administrator", "123123", "books_bucket")
+	err := Client.InitCouchbase("Administrator", "123123", "books_bucket")
+	if err != nil {
+		return
+	}
 
 	// Start Kafka consumer in a separate goroutine
-	go consumer.StartConsumer()
 
+	go func() {
+		err := Consumer.StartConsumer()
+		if err != nil {
+
+		}
+	}()
 	// Start gRPC client
 	go controller.StartGRPCServer(":50051")
 

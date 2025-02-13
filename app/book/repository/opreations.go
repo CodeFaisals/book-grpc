@@ -9,9 +9,23 @@ import (
 	"github.com/couchbase/gocb/v2"
 )
 
-func GetBooks() ([]b.Book, error) {
+type BookRepository interface {
+	GetBooks() ([]b.Book, error)
+	InsertBook(book b.Book) error
+	DeleteBook(id string) error
+	UpdateBook(id, newBookName string) error
+}
+
+type bookRepository struct {
+	couchbase couchbase.Client //Calls interface in connection.go
+	//conn couchbase.Client.NewClient we gotta figure this out
+}
+
+func (s *bookRepository) GetBooks() ([]b.Book, error) {
+
+	conn := s.couchbase.NewClient()
 	query := "SELECT id, book_name,author FROM `books_bucket`"
-	rows, err := couchbase.Cluster.Query(query, nil)
+	rows, err := conn.Cluster.Query(query, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not get books: %v", err)
 	}
@@ -31,8 +45,8 @@ func GetBooks() ([]b.Book, error) {
 
 	return books, nil
 }
-func InsertBook(book b.Book) error {
-	collection := couchbase.GetCollection()
+func (s *bookRepository) InsertBook(book b.Book) error {
+	collection := s.couchbase.GetCollection()
 	_, err := collection.Upsert(book.ID, book, &gocb.UpsertOptions{
 		Timeout: 5 * time.Second,
 	})
@@ -42,8 +56,9 @@ func InsertBook(book b.Book) error {
 	return nil
 }
 
-func UpdateBook(id, newBookName string) error {
-	_, err := couchbase.Cluster.Bucket("books_bucket").DefaultCollection().Upsert(id, map[string]interface{}{
+func (s *bookRepository) UpdateBook(id, newBookName string) error {
+	conn := s.couchbase.NewClient()
+	_, err := conn.Cluster.Bucket("books_bucket").DefaultCollection().Upsert(id, map[string]interface{}{
 		"id":        id,
 		"book_name": newBookName,
 	}, nil)
@@ -55,9 +70,10 @@ func UpdateBook(id, newBookName string) error {
 	return nil
 }
 
-func DeleteBook(id string) error {
+func (s *bookRepository) DeleteBook(id string) error {
+	conn := s.couchbase.NewClient()
 	query := "DELETE FROM `books_bucket` WHERE id = $1"
-	_, err := couchbase.Cluster.Query(query, &gocb.QueryOptions{
+	_, err := conn.Cluster.Query(query, &gocb.QueryOptions{
 		PositionalParameters: []interface{}{id},
 	})
 	return err
