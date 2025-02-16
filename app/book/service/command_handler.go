@@ -21,6 +21,10 @@ type bookService struct {
 	repo operation.BookRepository
 }
 
+func NewBookService(repo operation.BookRepository) BookService {
+	return &bookService{repo: repo}
+}
+
 func (s *bookService) HandleGetBooks() (*pb.BookListResponse, error) {
 	// remove this query and add it to repository/operations.go # DONE
 	books, err := s.repo.GetBooks()
@@ -39,7 +43,6 @@ func (s *bookService) HandleGetBooks() (*pb.BookListResponse, error) {
 	return &pb.BookListResponse{Books: pbBooks}, nil
 }
 
-// here we require packacge model book # DONE
 func (s *bookService) HandleAddBook(book b.Book) (*pb.BookResponse, error) {
 	log.Printf("Adding book: %s", book.BookName)
 

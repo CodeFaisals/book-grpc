@@ -5,7 +5,6 @@ import (
 	"time"
 
 	b "github.com/BlazeCode1/book-grpc/app/book/model/Book"
-	"github.com/BlazeCode1/book-grpc/couchbase"
 	"github.com/couchbase/gocb/v2"
 )
 
@@ -17,15 +16,22 @@ type BookRepository interface {
 }
 
 type bookRepository struct {
-	couchbase couchbase.Client //Calls interface in connection.go
-	//conn couchbase.Client.NewClient we gotta figure this out
+	bookCluster    *gocb.Cluster
+	bookCollection *gocb.Collection
 }
 
+func NewBookRepository(cluster *gocb.Cluster) BookRepository {
+	bucket := cluster.Bucket("books_bucket")
+	collection := bucket.DefaultCollection()
+	return &bookRepository{
+		bookCluster:    cluster,
+		bookCollection: collection,
+	}
+}
 func (s *bookRepository) GetBooks() ([]b.Book, error) {
 
-	conn := s.couchbase.NewClient()
 	query := "SELECT id, book_name,author FROM `books_bucket`"
-	rows, err := conn.Cluster.Query(query, nil)
+	rows, err := s.bookCluster.Query(query, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not get books: %v", err)
 	}
@@ -46,7 +52,7 @@ func (s *bookRepository) GetBooks() ([]b.Book, error) {
 	return books, nil
 }
 func (s *bookRepository) InsertBook(book b.Book) error {
-	collection := s.couchbase.GetCollection()
+	collection := s.bookCollection
 	_, err := collection.Upsert(book.ID, book, &gocb.UpsertOptions{
 		Timeout: 5 * time.Second,
 	})
@@ -57,8 +63,8 @@ func (s *bookRepository) InsertBook(book b.Book) error {
 }
 
 func (s *bookRepository) UpdateBook(id, newBookName string) error {
-	conn := s.couchbase.NewClient()
-	_, err := conn.Cluster.Bucket("books_bucket").DefaultCollection().Upsert(id, map[string]interface{}{
+
+	_, err := s.bookCluster.Bucket("books_bucket").DefaultCollection().Upsert(id, map[string]interface{}{
 		"id":        id,
 		"book_name": newBookName,
 	}, nil)
@@ -71,9 +77,9 @@ func (s *bookRepository) UpdateBook(id, newBookName string) error {
 }
 
 func (s *bookRepository) DeleteBook(id string) error {
-	conn := s.couchbase.NewClient()
+
 	query := "DELETE FROM `books_bucket` WHERE id = $1"
-	_, err := conn.Cluster.Query(query, &gocb.QueryOptions{
+	_, err := s.bookCluster.Query(query, &gocb.QueryOptions{
 		PositionalParameters: []interface{}{id},
 	})
 	return err

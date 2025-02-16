@@ -1,6 +1,5 @@
 package consumer
 
-//kafka code
 import (
 	"context"
 	"encoding/json"
@@ -12,62 +11,69 @@ import (
 )
 
 type KafkaConsumer interface {
-	StartConsumer() error
+	StartConsumer(ctx context.Context) error
 }
+
 type kafkaConsumer struct {
 	service service.BookService
 }
 
-func (s *kafkaConsumer) StartConsumer() {
+// NewKafkaConsumer New constructor for KafkaConsumer
+func NewKafkaConsumer(svc service.BookService) KafkaConsumer {
+	return &kafkaConsumer{service: svc}
+}
+
+// StartConsumer Updated to accept a context for proper shutdown
+func (s *kafkaConsumer) StartConsumer(ctx context.Context) error {
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{"broker:29092"},
 		Topic:   "book-events",
 		GroupID: "book-group",
 	})
-	defer reader.Close()
+	defer func(reader *kafka.Reader) {
+		err := reader.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}(reader)
 
-	log.Println("Kafka consumer started")
-
-	// Test connection to broker
-	conn, err := kafka.DialLeader(context.Background(), "tcp", "broker:29092", "book-events", 0)
-	if err != nil {
-		log.Printf("Failed to connect to Kafka broker: %v", err)
-		return
-	}
-	conn.Close()
-	log.Println("Successfully connected to Kafka broker")
+	log.Println("Kafka consumer started and listening for messages...")
 
 	for {
-		ctx := context.Background()
-		msg, err := reader.ReadMessage(ctx)
-		if err != nil {
-			log.Printf("Error reading message: %v", err)
-			continue
+		select {
+		case <-ctx.Done(): //  Graceful shutdown handling
+			log.Println("Kafka consumer shutting down...")
+			return nil
+		default:
+			msg, err := reader.ReadMessage(ctx)
+			if err != nil {
+				log.Printf("Error reading message: %v", err)
+				continue
+			}
+
+			log.Printf("Received message: Topic=%s, Partition=%d, Offset=%d, Key=%s, Value=%s",
+				msg.Topic, msg.Partition, msg.Offset, string(msg.Key), string(msg.Value))
+
+			id := string(msg.Key)
+			book := Book.Book{}
+			err = json.Unmarshal(msg.Value, &book)
+			if err != nil {
+				log.Printf("Error unmarshalling book: %v", err)
+				continue
+			}
+
+			log.Printf("Processing book update - ID: %s, BookName: %s", id, book.BookName)
+
+			book.ID = id
+
+			// Update book in the database
+			response, err := s.service.HandleUpdateBook(id, book)
+			if err != nil {
+				log.Printf("Error updating book: %v", err)
+				continue
+			}
+
+			log.Printf("Update successful: %v", response)
 		}
-
-		log.Printf("Received message: Topic=%s, Partition=%d, Offset=%d, Key=%s, Value=%s",
-			msg.Topic, msg.Partition, msg.Offset, string(msg.Key), string(msg.Value))
-
-		id := string(msg.Key)
-		book := Book.Book{}
-		err = json.Unmarshal(msg.Value, &book)
-		if err != nil {
-			log.Printf("Error unmarshalling book: %v", err)
-			log.Printf("Raw message value: %s", string(msg.Value))
-			continue
-		}
-
-		log.Printf("Processing book update - ID: %s, BookName: %s", id, book.BookName)
-
-		book.ID = id
-
-		// Update the book in the database
-		response, err := s.service.HandleUpdateBook(id, book)
-		if err != nil {
-			log.Printf("Error updating book: %v", err)
-			continue
-		}
-
-		log.Printf("Response: %v", response)
 	}
 }

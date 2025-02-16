@@ -34,14 +34,14 @@ func (s *server) DeleteBook(ctx context.Context, req *grpc2.BookDeletionRequest)
 }
 
 // StartGRPCServer initializes and starts the gRPC client
-func StartGRPCServer(address string) {
+func StartGRPCServer(address string, bookService service.BookService) {
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("Failed to listen on %s: %v", address, err)
 	}
-
+	bookServer := &server{service: bookService}
 	grpcServer := grpc.NewServer()
-	grpc2.RegisterBookServiceServer(grpcServer, &server{})
+	grpc2.RegisterBookServiceServer(grpcServer, bookServer)
 
 	log.Printf("gRPC client started on %s", address)
 	if err := grpcServer.Serve(listener); err != nil {
