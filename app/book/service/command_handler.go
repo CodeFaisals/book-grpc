@@ -75,7 +75,7 @@ func (s *bookService) HandleDeleteBook(id string) (*pb.BookResponse, error) {
 
 func (s *bookService) HandleUpdateBook(id string, book b.Book) (*pb.BookResponse, error) {
 	log.Printf("Updating book with ID: %s", id)
-	err := s.repo.UpdateBook(id, book.BookName)
+	err := s.repo.UpdateBook(id, book.BookName, book.Author)
 	if err != nil {
 		return nil, err
 	}

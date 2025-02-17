@@ -62,7 +62,7 @@ func (s *kafkaConsumer) StartConsumer(ctx context.Context) error {
 				continue
 			}
 
-			log.Printf("Processing book update - ID: %s, BookName: %s", id, book.BookName)
+			log.Printf("Processing book update - ID: %s, BookName: %s, Author: %s", id, book.BookName, book.Author)
 
 			book.ID = id
 

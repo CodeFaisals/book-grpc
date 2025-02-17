@@ -12,7 +12,7 @@ type BookRepository interface {
 	GetBooks() ([]b.Book, error)
 	InsertBook(book b.Book) error
 	DeleteBook(id string) error
-	UpdateBook(id, newBookName string) error
+	UpdateBook(id, newBookName string, author string) error
 }
 
 type bookRepository struct {
@@ -62,11 +62,12 @@ func (s *bookRepository) InsertBook(book b.Book) error {
 	return nil
 }
 
-func (s *bookRepository) UpdateBook(id, newBookName string) error {
+func (s *bookRepository) UpdateBook(id, newBookName string, author string) error {
 
 	_, err := s.bookCluster.Bucket("books_bucket").DefaultCollection().Upsert(id, map[string]interface{}{
 		"id":        id,
 		"book_name": newBookName,
+		"author":    author,
 	}, nil)
 
 	if err != nil {
