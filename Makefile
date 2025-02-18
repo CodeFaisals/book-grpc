@@ -1,6 +1,6 @@
 PROTO_SRC=./proto
 PROTO_GEN=./app/book/controller/grpc
-
+SOURCE_FILE = ./app/book/*
 .PHONY: proto
 proto: $(PROTO_SRC)/*.proto
 	#mkdir ${PROTO_GEN}
@@ -13,3 +13,7 @@ tidy:
 
 run:
 	go run .
+
+
+mock: $(SOURCE_FILE)
+	mockery  --output ./mocks --dir $(SOURCE_FILE) --all

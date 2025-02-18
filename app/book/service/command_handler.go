@@ -68,7 +68,7 @@ func (s *bookService) HandleDeleteBook(id string) (*pb.BookResponse, error) {
 	// Delete the book from your storage
 	err := s.repo.DeleteBook(id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to delete book: %v", err)
 	}
 	return &pb.BookResponse{Message: "Book deleted successfully"}, nil
 }
