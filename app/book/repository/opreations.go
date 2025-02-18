@@ -5,13 +5,33 @@ import (
 	"time"
 
 	b "github.com/BlazeCode1/book-grpc/app/book/model/Book"
-	"github.com/BlazeCode1/book-grpc/couchbase"
 	"github.com/couchbase/gocb/v2"
 )
 
-func GetBooks() ([]b.Book, error) {
-	query := "SELECT id, book_name FROM `books_bucket`"
-	rows, err := couchbase.Cluster.Query(query, nil)
+type BookRepository interface {
+	GetBooks() ([]b.Book, error)
+	InsertBook(book b.Book) error
+	DeleteBook(id string) error
+	UpdateBook(id, newBookName string, author string) error
+}
+
+type bookRepository struct {
+	bookCluster    *gocb.Cluster
+	bookCollection *gocb.Collection
+}
+
+func NewBookRepository(cluster *gocb.Cluster) BookRepository {
+	bucket := cluster.Bucket("books_bucket")
+	collection := bucket.DefaultCollection()
+	return &bookRepository{
+		bookCluster:    cluster,
+		bookCollection: collection,
+	}
+}
+func (s *bookRepository) GetBooks() ([]b.Book, error) {
+
+	query := "SELECT id, book_name,author FROM `books_bucket`"
+	rows, err := s.bookCluster.Query(query, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not get books: %v", err)
 	}
@@ -31,8 +51,8 @@ func GetBooks() ([]b.Book, error) {
 
 	return books, nil
 }
-func InsertBook(book b.Book) error {
-	collection := couchbase.GetCollection()
+func (s *bookRepository) InsertBook(book b.Book) error {
+	collection := s.bookCollection
 	_, err := collection.Upsert(book.ID, book, &gocb.UpsertOptions{
 		Timeout: 5 * time.Second,
 	})
@@ -42,10 +62,12 @@ func InsertBook(book b.Book) error {
 	return nil
 }
 
-func UpdateBook(id, newBookName string) error {
-	_, err := couchbase.Cluster.Bucket("books_bucket").DefaultCollection().Upsert(id, map[string]interface{}{
+func (s *bookRepository) UpdateBook(id, newBookName string, author string) error {
+
+	_, err := s.bookCluster.Bucket("books_bucket").DefaultCollection().Upsert(id, map[string]interface{}{
 		"id":        id,
 		"book_name": newBookName,
+		"author":    author,
 	}, nil)
 
 	if err != nil {
@@ -55,9 +77,10 @@ func UpdateBook(id, newBookName string) error {
 	return nil
 }
 
-func DeleteBook(id string) error {
+func (s *bookRepository) DeleteBook(id string) error {
+
 	query := "DELETE FROM `books_bucket` WHERE id = $1"
-	_, err := couchbase.Cluster.Query(query, &gocb.QueryOptions{
+	_, err := s.bookCluster.Query(query, &gocb.QueryOptions{
 		PositionalParameters: []interface{}{id},
 	})
 	return err
